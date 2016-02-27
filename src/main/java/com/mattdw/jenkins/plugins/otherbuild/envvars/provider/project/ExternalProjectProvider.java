@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2016 M.D.Ward <matthew.ward@byng.co>.
+ * Copyright 2016 M.D.Ward <dev@mattdw.co.uk>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@ import hudson.model.AbstractProject;
  * 
  * @param <P> Type of project to return (must extend {@link AbstractProject}
  * 
- * @author M.D.Ward <matthew.ward@byng.co>
+ * @author M.D.Ward <dev@mattdw.co.uk>
  */
 public interface ExternalProjectProvider <P extends AbstractProject> {
 

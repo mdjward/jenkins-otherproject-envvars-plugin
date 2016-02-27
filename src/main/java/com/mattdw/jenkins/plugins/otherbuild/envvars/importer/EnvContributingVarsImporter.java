@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2016 M.D.Ward <matthew.ward@byng.co>.
+ * Copyright 2016 M.D.Ward <dev@mattdw.co.uk>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
  * EnvContributingVarsImporter - makes use of build actions to handle the import
  * of environment variables into a given build
  * 
- * @author M.D.Ward <matthew.ward@byng.co>
+ * @author M.D.Ward <dev@mattdw.co.uk>
  */
 public class EnvContributingVarsImporter implements TemplatingOtherBuildEnvVarsImporter {
 

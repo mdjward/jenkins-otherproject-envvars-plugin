@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2016 M.D.Ward <matthew.ward@byng.co>.
+ * Copyright 2016 M.D.Ward <dev@mattdw.co.uk>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@ package com.mattdw.jenkins.plugins.otherbuild.envvars.provider;
  * to provision of resources necessary to locate another build from which
  * environment variables are to be imported
  * 
- * @author M.D.Ward <matthew.ward@byng.co>
+ * @author M.D.Ward <dev@mattdw.co.uk>
  */
 public abstract class OtherBuildVarImportException extends Exception {
 
