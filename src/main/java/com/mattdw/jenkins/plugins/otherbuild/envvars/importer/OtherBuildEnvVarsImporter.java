@@ -27,14 +27,24 @@ package com.mattdw.jenkins.plugins.otherbuild.envvars.importer;
 import hudson.model.Run;
 import java.util.Map;
 
+
+
 /**
- * OtherBuildEnvVarsImporter
+ * OtherBuildEnvVarsImporter - interface definition for importing environment
+ * variables into a [current] build
  * 
  * @author M.D.Ward <matthew.ward@byng.co>
- * @copyright (c) 2016, Byng Services Ltd
  */
 public interface OtherBuildEnvVarsImporter {
 
+    /**
+     * Imports variables into a build
+     * 
+     * @param targetBuild
+     *      Build into which variables are to be imported
+     * @param otherBuildEnvVars 
+     *      Variables to be imported
+     */
     public void importVars(Run<?, ?> targetBuild, Map<String, String> otherBuildEnvVars);
     
 }

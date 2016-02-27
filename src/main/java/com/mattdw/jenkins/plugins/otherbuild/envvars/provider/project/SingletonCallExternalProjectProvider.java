@@ -29,25 +29,52 @@ import java.lang.reflect.InvocationTargetException;
 import jenkins.model.Jenkins;
 
 /**
- * SingletonCallExternalProjectProvider
+ * SingletonCallExternalProjectProvider - provides a project through the singleton
+ * Jenkins.getActiveInstance() method (or an extension thereof)s
  * 
  * @author M.D.Ward <matthew.ward@byng.co>
- * @copyright (c) 2016, Byng Services Ltd
  */
 public class SingletonCallExternalProjectProvider implements ExternalProjectProvider<AbstractProject> {
 
+    /**
+     * Class descriptor of the Jenkins implementation on which the static
+     * singleton method to load projects will be executed
+     */
     private final Class<Jenkins> jenkinsClass;
 
+    /**
+     * Constructor - creates a new instance of SingletonCallExternalProjectProvider
+     * with a specific Jenkins (or extension thereof) class descriptor
+     * 
+     * @param jenkinsClass 
+     *      Class descriptor of the Jenkins implementation on which the static
+     *      singleton method to load projects will be executed
+     */
     public SingletonCallExternalProjectProvider(Class<Jenkins> jenkinsClass) {
         this.jenkinsClass = (jenkinsClass != null ? jenkinsClass : Jenkins.class);
     }
 
+    /**
+     * Constructor - creates a new instance of SingletonCallExternalProjectProvider
+     */
     public SingletonCallExternalProjectProvider() {
         this(null);
     }
 
+    /**
+     * Provides a target project by name
+     * 
+     * @param name
+     *      Name (identifier) of the target project
+     * @return
+     *      Target project (if it can be found)
+     * @throws ProjectNotFoundException 
+     *      If the project cannot be found with the given name (id)
+     */
+    @Override
     public AbstractProject provideProject(String name) throws ProjectNotFoundException {
         try {
+            // Use reflection primarily for testability
             AbstractProject project = (
                 (Jenkins) this.jenkinsClass.getMethod(
                     "getActiveInstance",
@@ -55,13 +82,16 @@ public class SingletonCallExternalProjectProvider implements ExternalProjectProv
                 ).invoke(null, new Object[0])
             ).getItemByFullName(name, AbstractProject.class);
 
+            // If the project was successfully loaded (non-null), return it
             if (project != null) {
                 return project;
             }
 
+            // ...otherwise throw an appropriate exception
             throw new ProjectNotFoundException(name);
 
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            // Any reflective/other exceptions need to be rethrown
             throw new ProjectNotFoundException(name, ex);
         }
     }

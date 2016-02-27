@@ -25,17 +25,34 @@
 package com.mattdw.jenkins.plugins.otherbuild.envvars.provider;
 
 /**
- * OtherBuildVarImportException
+ * OtherBuildVarImportException - abstract supertype for exceptions related
+ * to provision of resources necessary to locate another build from which
+ * environment variables are to be imported
  * 
  * @author M.D.Ward <matthew.ward@byng.co>
- * @copyright (c) 2016, Byng Services Ltd
  */
 public abstract class OtherBuildVarImportException extends Exception {
 
+    /**
+     * Constructor - creates a new instance of OtherBuildVarImportException
+     * with an underlying exception [cause]
+     * 
+     * @param message
+     *      Exception message
+     * @param cause 
+     *      Underlying exception which caused this exception to be triggered
+     */
     public OtherBuildVarImportException(String message, Throwable cause) {
         super(message, cause);
     }
     
+    /**
+     * Constructor - creates a new instance of OtherBuildVarImportException
+     * without an underlying exception [cause]
+     * 
+     * @param message
+     *      Exception message
+     */
     public OtherBuildVarImportException(String message) {
         this(message, null);
     }

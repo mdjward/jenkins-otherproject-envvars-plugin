@@ -26,17 +26,36 @@ package com.mattdw.jenkins.plugins.otherbuild.envvars.provider.build;
 
 import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.OtherBuildVarImportException;
 
+
+
 /**
- * BuildNotFoundException
+ * BuildNotFoundException - describes a failure to locate an identified build
+ * for an identified project
  * 
  * @author M.D.Ward <matthew.ward@byng.co>
- * @copyright (c) 2016, Byng Services Ltd
  */
 public class BuildNotFoundException extends OtherBuildVarImportException {
     
+    /**
+     * Identifier of the target project
+     */
     private final String project;
+    
+    /**
+     * Identifier of the target build
+     */
     private final String id;
     
+    
+    
+    /**
+     * Constructor - creates a new instance of BuildNotFoundException
+     * 
+     * @param project
+     *      Identifier of the target project
+     * @param id
+     *      Identifier of the target build
+     */
     public BuildNotFoundException(String project, String id) {
         super("Could not find a build with id " + id + " in project " + project);
         
@@ -44,10 +63,20 @@ public class BuildNotFoundException extends OtherBuildVarImportException {
         this.id = id;
     }
 
+    /**
+     * Getter for project
+     * 
+     * @return Identifier of the target project
+     */
     public String getProject() {
         return project;
     }
 
+    /**
+     * Getter for id
+     * 
+     * @return Identifier of the target build
+     */
     public String getId() {
         return id;
     }

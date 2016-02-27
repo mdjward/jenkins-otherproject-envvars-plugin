@@ -24,14 +24,22 @@
 
 package com.mattdw.jenkins.plugins.otherbuild.envvars.importer;
 
+
+
 /**
- * TemplatingOtherBuildEnvVarsImporter
+ * TemplatingOtherBuildEnvVarsImporter - extends {@link OtherBuildEnvVarsImporter}
+ * to provide a getter for a variable name template
  * 
  * @author M.D.Ward <matthew.ward@byng.co>
- * @copyright (c) 2016, Byng Services Ltd
  */
 public interface TemplatingOtherBuildEnvVarsImporter extends OtherBuildEnvVarsImporter {
 
+    /**
+     * Returns the variable name template being used when importing environment
+     * variables into a given build
+     * 
+     * @return Variable name template to be used when assigning new variable names
+     */
     public String getVarNameTemplate();
     
 }

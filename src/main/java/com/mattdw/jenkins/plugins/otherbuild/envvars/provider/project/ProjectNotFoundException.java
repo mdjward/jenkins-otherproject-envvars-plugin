@@ -30,22 +30,47 @@ import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.OtherBuildVarImpor
  * ProjectNotFoundException
  * 
  * @author M.D.Ward <matthew.ward@byng.co>
- * @copyright (c) 2016, Byng Services Ltd
  */
 public class ProjectNotFoundException extends OtherBuildVarImportException {
 
+    /**
+     * Identifier of the target project
+     */
     private final String project;
-    
+
+
+
+    /**
+     * Constructor - creates a new instance of BuildNotFoundException
+     * with an underlying exception [cause]
+     * 
+     * @param project
+     *      Identifier of the target project
+     * @param cause 
+     *      Underlying exception which caused this exception to be triggered
+     */
     public ProjectNotFoundException(String project, Throwable cause) {
         super("Could not find project with name: " + project, cause);
         
         this.project = project;
     }
     
+    /**
+     * Constructor - creates a new instance of BuildNotFoundException
+     * without an underlying exception [cause]
+     * 
+     * @param project
+     *      Identifier of the target project
+     */
     public ProjectNotFoundException(String project) {
         this(project, null);
     }
 
+    /**
+     * Getter for project
+     * 
+     * @return Identifier of the target project
+     */
     public String getProject() {
         return project;
     }

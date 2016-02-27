@@ -30,13 +30,26 @@ import hudson.model.AbstractProject;
 import java.util.List;
 
 /**
- * NamedBuildExternalBuildProvider
+ * NamedBuildExternalBuildProvider - Provides builds identified primarily by
+ * display name, falling back to the build number upon failure
  * 
  * @author M.D.Ward <matthew.ward@byng.co>
- * @copyright (c) 2016, Byng Services Ltd
  */
 public class NamedBuildExternalBuildProvider extends BuildNumberExternalBuildProvider {
 
+    /**
+     * Provides a target build by build name/number and project
+     * 
+     * @param project
+     *      Project from which to provide the target build
+     * @param id
+     *      Display name or build number of the target build
+     * @return
+     *      Target build (if it can be found)
+     * @throws BuildNotFoundException 
+     *      If the build could not be found with the given build display name
+     *      or number for the given project
+     */
     @Override
     public AbstractBuild provideBuild(
         final AbstractProject project,
@@ -49,10 +62,26 @@ public class NamedBuildExternalBuildProvider extends BuildNumberExternalBuildPro
         }
     }
 
+    /**
+     * Finds a build by display name and project
+     * 
+     * @param project
+     *      Project from which to provide the target build
+     * @param name
+     *      Display name of the target build
+     * @return
+     *      Target build (if it can be found)
+     * @throws BuildNotFoundException 
+     *      If the build could not be found with the given build display name
+     *      for the given project
+     */
     protected AbstractBuild findBuildByName(
         final AbstractProject project,
         final String name
     ) throws BuildNotFoundException {
+        
+        // Filter builds by a name matching predicate (rather than 
+        // inefficiently iterating through)
         List<AbstractBuild> matchingBuilds = project.getBuilds().filter(
             new Predicate<AbstractBuild>() {
                 @Override
@@ -68,10 +97,12 @@ public class NamedBuildExternalBuildProvider extends BuildNumberExternalBuildPro
             }
         );
 
+        // Return the first build in the filtered list if at least one was found
         if (matchingBuilds.size() > 0) {
             return matchingBuilds.get(0);
         }
         
+        // ...and throw an exception if none were found
         throw new BuildNotFoundException(project.getName(), name);
     }
     

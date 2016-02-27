@@ -26,14 +26,27 @@ package com.mattdw.jenkins.plugins.otherbuild.envvars.provider.project;
 
 import hudson.model.AbstractProject;
 
+
+
 /**
  * ExternalProjectProvider
  * 
+ * @param <P> Type of project to return (must extend {@link AbstractProject}
+ * 
  * @author M.D.Ward <matthew.ward@byng.co>
- * @copyright (c) 2016, Byng Services Ltd
  */
 public interface ExternalProjectProvider <P extends AbstractProject> {
 
+    /**
+     * Provides a target project by name
+     * 
+     * @param name
+     *      Name (identifier) of the target project
+     * @return
+     *      Target project (if it can be found)
+     * @throws ProjectNotFoundException 
+     *      If the project cannot be found with the given name (id)
+     */
     public P provideProject(String name) throws ProjectNotFoundException;
     
 }

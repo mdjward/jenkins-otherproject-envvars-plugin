@@ -27,14 +27,29 @@ package com.mattdw.jenkins.plugins.otherbuild.envvars.provider.build;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 
+
+
 /**
- * BuildNumberBuildProvider
+ * BuildNumberBuildProvider - Provides builds identified solely by their build
+ * number
  * 
  * @author M.D.Ward <matthew.ward@byng.co>
- * @copyright (c) 2016, Byng Services Ltd
  */
 public class BuildNumberExternalBuildProvider implements ExternalBuildProvider<AbstractProject, AbstractBuild> {
 
+    /**
+     * Provides a target build by build number and project
+     * 
+     * @param project
+     *      Project from which to provide the target build
+     * @param id
+     *      Build number of the target build
+     * @return
+     *      Target build (if it can be found)
+     * @throws BuildNotFoundException 
+     *      If the build could not be found with the given build number (id)
+     *      for the given project
+     */
     @Override
     public AbstractBuild provideBuild(
         AbstractProject project,
