@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<div>
+    Imports environment variables from another build [on another project] using a given prefix
+</div>
