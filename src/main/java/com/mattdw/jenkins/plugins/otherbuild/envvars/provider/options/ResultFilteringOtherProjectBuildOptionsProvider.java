@@ -85,7 +85,7 @@ public class ResultFilteringOtherProjectBuildOptionsProvider implements OtherPro
 
     protected List<AbstractBuild> filterBuilds(RunList runs) {
         if (this.result == null) {
-            return new RunList<>();
+            return runs;
         }
 
         return runs.filter(new Predicate<AbstractBuild>() {

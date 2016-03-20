@@ -100,20 +100,30 @@ public class ResultFilteringOtherProjectBuildOptionsProviderTest {
     }
     
     @Test
-    public void testGetOptionsForProjectReturnsEmptyListWhenNoResultToCompare() {
+    public void testGetOptionsForProjectReturnsGivenListWhenNoResultToCompare() {
         this.provider = new ResultFilteringOtherProjectBuildOptionsProvider(
             null,
             this.formatter
         );
-        
+
         final RunList<AbstractBuild> buildList = RunList.fromRuns(java.util.Arrays.asList(new AbstractBuild[]{this.build}));
+        final String formattedBuildName = "FORTY TWO";
 
         when(this.project.getBuilds()).thenReturn(buildList);
+        when(this.build.getNumber()).thenReturn(42);
+        when(this.formatter.formatBuild(same(this.build))).thenReturn(formattedBuildName);
 
         ListBoxModel list = this.provider.getOptionsForProject(this.project);
-        assertEquals(0, list.size());
+        assertEquals(1, list.size());
+
+        Option firstListEntry = list.get(0);
+
+        assertEquals(formattedBuildName, firstListEntry.name);
+        assertEquals("42", firstListEntry.value);
 
         verify(this.project, times(1)).getBuilds();
+        verify(this.build, times(1)).getNumber();
+        verify(this.formatter, times(1)).formatBuild(same(this.build));
     }
    
 }
