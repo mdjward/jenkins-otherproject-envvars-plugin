@@ -62,7 +62,7 @@ public class EnvContributingVarsImporter implements TemplatingOtherBuildEnvVarsI
      *      If the string template does not conform to the valid pattern laid
      *      out in isVarNameTemplateValid()
      */
-    public EnvContributingVarsImporter(String varNameTemplate) throws IllegalArgumentException {
+    public EnvContributingVarsImporter(final String varNameTemplate) throws IllegalArgumentException {
         if (!isVarNameTemplateValid(varNameTemplate)) {
             throw new IllegalArgumentException(
                 String.format("Var name template %s is invalid", varNameTemplate)
