@@ -18,9 +18,9 @@
         inline="true"
         checked="${instance.filterByBuildResult}"
     >
-        <f:entry title="Field to increment upon each build" field="buildResultFilter">
+        <f:entry title="${%Build Result Filter}" field="buildResultFilter">
             <f:select/>
         </f:entry>
     </f:optionalBlock>
-
+    
 </j:jelly>
