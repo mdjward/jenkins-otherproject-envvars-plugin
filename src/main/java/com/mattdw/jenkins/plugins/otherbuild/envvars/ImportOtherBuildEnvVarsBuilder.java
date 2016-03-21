@@ -24,14 +24,12 @@
 
 package com.mattdw.jenkins.plugins.otherbuild.envvars;
 
+import com.mattdw.jenkins.plugins.otherbuild.envvars.execution.ImportVarsConfiguration;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.execution.factory.ImportVarsExecutorFactory;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.execution.ImportVarsResult;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.EnvContributingVarsImporter;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.TemplatingOtherBuildEnvVarsImporter;
-import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.project.ExternalProjectProvider;
-import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.project.SingletonCallExternalProjectProvider;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.OtherBuildVarImportException;
-import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.build.ExternalBuildProvider;
-import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.build.NamedBuildExternalBuildProvider;
-import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.Extension;
 import hudson.FilePath;
@@ -64,34 +62,55 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
      * Project name of the project to which the target build belongs
      */
     private final String projectName;
-    
+
     /**
      * Identifier of the target build from which environment variables
      * are imported
      */
     private final String buildId;
-    
+
     /**
      * Variable importer mechanism
      */
     private final TemplatingOtherBuildEnvVarsImporter varImporter;
 
     /**
-     * Project provider mechanism for the target build from which
-     * variables are imported
+     * Factory for the "base builder" (sub-builder to which the actual builder
+     * logic is abstracted)
      */
-    private transient ExternalProjectProvider<AbstractProject> projectProvider = new SingletonCallExternalProjectProvider();
-    
-    /**
-     * Build provider mechanism for the target build from which
-     * variables are imported
-     */
-    private transient ExternalBuildProvider<AbstractProject, AbstractBuild> buildProvider = new NamedBuildExternalBuildProvider();
+    private transient ImportVarsExecutorFactory baseBuilderFactory;
 
 
 
     /**
      * Constructor - creates a new instance of ImportOtherBuildEnvVarsBuilder
+     * 
+     * @param projectName
+     *      Project name of the project to which the target build belongs
+     * @param buildId
+     *      Identifier of the target build from which environment variables
+     *      are imported
+     * @param varImporter 
+     *      Variable importer mechanism
+     * @param baseBuilderFactory
+     *      Factory for the "base builder" (sub-builder to which the actual
+     *      builder logic is abstracted)
+     */
+    public ImportOtherBuildEnvVarsBuilder(
+        final String projectName,
+        final String buildId,
+        final TemplatingOtherBuildEnvVarsImporter varImporter,
+        final ImportVarsExecutorFactory baseBuilderFactory
+    ) {
+        this.projectName = projectName;
+        this.buildId = buildId;
+        this.varImporter = varImporter;
+        this.baseBuilderFactory = baseBuilderFactory;
+    }
+    
+    /**
+     * Constructor - creates a new instance of ImportOtherBuildEnvVarsBuilder
+     * using a default base builder factory
      * 
      * @param projectName
      *      Project name of the project to which the target build belongs
@@ -106,9 +125,11 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
         final String buildId,
         final TemplatingOtherBuildEnvVarsImporter varImporter
     ) {
-        this.projectName = projectName;
-        this.buildId = buildId;
-        this.varImporter = varImporter;
+        this(projectName,
+            buildId,
+            varImporter,
+            new ImportVarsExecutorFactory.ImporterImpl()
+        );
     }
 
     /**
@@ -170,43 +191,19 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
     }
 
     /**
-     * Setter for projectProvider
-     * 
-     * @param projectProvider 
-     *      Project provider mechanism for the target build from which
-     *      variables are imported
-     */
-    public void setProjectProvider(ExternalProjectProvider<AbstractProject> projectProvider) {
-        this.projectProvider = projectProvider;
-    }
-
-    /**
-     * Setter for buildProvider
-     * 
-     * @param buildProvider 
-     *      Build provider mechanism for the target build from which
-     *      variables are imported
-     */
-    public void setBuildProvider(ExternalBuildProvider<AbstractProject, AbstractBuild> buildProvider) {
-        this.buildProvider = buildProvider;
-    }
-
-    /**
      * Executes preparatory actions for <pre>perform()</pre>, most notably
      * ensuring that service properties have been set, or are initialised to
      * their nominal defaults
+     * 
+     * This is primarily to resolve backwards compatibility issues
      * 
      * @throws RuntimeException 
      *      Implementation-specific runtime exceptions that may be thrown
      *      within the scope of 
      */
     protected void prePerform() throws RuntimeException {
-        if (this.projectProvider == null) {
-            this.projectProvider = new SingletonCallExternalProjectProvider();
-        }
-        
-        if (this.buildProvider == null) {
-            this.buildProvider = new NamedBuildExternalBuildProvider();
+        if (this.baseBuilderFactory == null) {
+            this.baseBuilderFactory = new ImportVarsExecutorFactory.ImporterImpl();
         }
     }
 
@@ -226,37 +223,34 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
      */
     @Override
     public void perform(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) {
-        
+
         // Essential that services have been initialised
         this.prePerform();
-        
+
         // Logger is initialised out in method scope for use in all clauses
         final PrintStream logger = listener.getLogger();
 
         try {
-            // Access other project and other build using the current task listener
-            final AbstractProject otherProject = this.projectProvider.provideProject(this.projectName);
-            final AbstractBuild otherBuild = this.buildProvider.provideBuild(
-                otherProject,
-                build.getEnvironment(listener).expand(this.buildId)
+
+            ImportVarsResult result = this.baseBuilderFactory.createBuilder().perform(
+                new ImportVarsConfiguration(
+                    this.projectName,
+                    this.buildId,
+                    this.varImporter
+                ),
+                this.varImporter,
+                build.getEnvironment(listener),
+                listener,
+                (AbstractBuild) build
             );
-
-            EnvVars otherBuildEnvVars = otherBuild.getEnvironment(listener);
-
-            /*
-             * Import these variables into the current build as the mechanism
-             * prescribes; the exact details are decoupled from this builder
-             */
-            this.varImporter.importVars(build, otherBuildEnvVars);
 
             logger.println(
                 Messages.ImportOtherBuildEnvVarsBuilder_Imported(
-                    otherBuildEnvVars.size(),
-                    otherBuild.getDisplayName(),
-                    otherProject.getName()
+                    result.getTotalVarsImported(),
+                    result.getBuildId(),
+                    result.getProjectName()
                 )
             );
-
         } catch (OtherBuildVarImportException ex) {
             
             // Any failure to import another project or build should fail the build
@@ -363,5 +357,5 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
         }
 
     }
-
+    
 }
