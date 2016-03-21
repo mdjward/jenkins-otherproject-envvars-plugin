@@ -78,7 +78,7 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
      * Factory for the "base builder" (sub-builder to which the actual builder
      * logic is abstracted)
      */
-    private transient ImportVarsExecutorFactory baseBuilderFactory;
+    private transient ImportVarsExecutorFactory executorFactory;
 
 
 
@@ -92,7 +92,7 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
      *      are imported
      * @param varImporter 
      *      Variable importer mechanism
-     * @param baseBuilderFactory
+     * @param executorFactory
      *      Factory for the "base builder" (sub-builder to which the actual
      *      builder logic is abstracted)
      */
@@ -100,12 +100,12 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
         final String projectName,
         final String buildId,
         final TemplatingOtherBuildEnvVarsImporter varImporter,
-        final ImportVarsExecutorFactory baseBuilderFactory
+        final ImportVarsExecutorFactory executorFactory
     ) {
         this.projectName = projectName;
         this.buildId = buildId;
         this.varImporter = varImporter;
-        this.baseBuilderFactory = baseBuilderFactory;
+        this.executorFactory = executorFactory;
     }
     
     /**
@@ -202,8 +202,8 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
      *      within the scope of 
      */
     protected void prePerform() throws RuntimeException {
-        if (this.baseBuilderFactory == null) {
-            this.baseBuilderFactory = new ImportVarsExecutorFactory.ImporterImpl();
+        if (this.executorFactory == null) {
+            this.executorFactory = new ImportVarsExecutorFactory.ImporterImpl();
         }
     }
 
@@ -232,7 +232,7 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
 
         try {
 
-            ImportVarsResult result = this.baseBuilderFactory.createBuilder().perform(
+            ImportVarsResult result = this.executorFactory.createBuilder().perform(
                 new ImportVarsConfiguration(
                     this.projectName,
                     this.buildId,
