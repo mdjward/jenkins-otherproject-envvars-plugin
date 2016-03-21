@@ -32,6 +32,6 @@ package com.mattdw.jenkins.plugins.otherbuild.envvars.importer;
  * 
  * @author M.D.Ward <dev@mattdw.co.uk>
  */
-public interface TemplatingOtherBuildEnvVarsImporter extends OtherBuildEnvVarsImporter, VarTemplater {
+public interface TemplatingOtherBuildEnvVarsImporter extends OtherBuildEnvVarsImporter, VarTemplateNameAware {
 
 }

@@ -38,6 +38,6 @@ import java.util.Map;
  * 
  * @author M.D.Ward <matthew.ward@byng.co>
  */
-public interface TemplatingEnvVarsCopier <M extends Map<String, String>> extends EnvVarsCopier<M>, VarTemplater {
+public interface TemplatingEnvVarsCopier <M extends Map<String, String>> extends EnvVarsCopier<M>, VarTemplateNameAware {
 
 }

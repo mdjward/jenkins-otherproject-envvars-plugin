@@ -31,11 +31,11 @@ package com.mattdw.jenkins.plugins.otherbuild.envvars.importer;
 
 
 /**
- * VarTemplater 
+ * VarTemplateNameAware 
  * 
  * @author M.D.Ward <matthew.ward@byng.co>
  */
-public interface VarTemplater {
+public interface VarTemplateNameAware {
 
     /**
      * Returns the variable name template being used when importing environment
