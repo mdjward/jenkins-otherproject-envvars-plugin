@@ -1,7 +1,11 @@
-/*
+/**
+ * TemplatingEnvVarsCopier.java
+ * Created 21-Mar-2016 10:38:30
+ *
+ * @author M.D.Ward <matthew.ward@byng.co>
  * The MIT License
  *
- * Copyright 2016 M.D.Ward <dev@mattdw.co.uk>.
+ * Copyright 2016 M.D.Ward <matthew.ward@byng.co>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +28,16 @@
 
 package com.mattdw.jenkins.plugins.otherbuild.envvars.importer;
 
+import java.util.Map;
+
 
 
 /**
- * TemplatingOtherBuildEnvVarsImporter - extends {@link OtherBuildEnvVarsImporter}
+ * TemplatingEnvVarsCopier - extends {@link EnvVarsCopier}
  * and {@link VarTemplateUser} to provide a getter for a variable name template
  * 
- * @author M.D.Ward <dev@mattdw.co.uk>
+ * @author M.D.Ward <matthew.ward@byng.co>
  */
-public interface TemplatingOtherBuildEnvVarsImporter extends OtherBuildEnvVarsImporter, VarTemplater {
+public interface TemplatingEnvVarsCopier <M extends Map<String, String>> extends EnvVarsCopier<M>, VarTemplater {
 
 }

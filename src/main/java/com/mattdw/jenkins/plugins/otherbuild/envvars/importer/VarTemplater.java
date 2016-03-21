@@ -1,7 +1,11 @@
-/*
+/**
+ * VarTemplater.java
+ * Created 21-Mar-2016 12:07:38
+ *
+ * @author M.D.Ward <matthew.ward@byng.co>
  * The MIT License
  *
- * Copyright 2016 M.D.Ward <dev@mattdw.co.uk>.
+ * Copyright 2016 M.D.Ward <matthew.ward@byng.co>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +31,18 @@ package com.mattdw.jenkins.plugins.otherbuild.envvars.importer;
 
 
 /**
- * TemplatingOtherBuildEnvVarsImporter - extends {@link OtherBuildEnvVarsImporter}
- * and {@link VarTemplateUser} to provide a getter for a variable name template
+ * VarTemplater 
  * 
- * @author M.D.Ward <dev@mattdw.co.uk>
+ * @author M.D.Ward <matthew.ward@byng.co>
  */
-public interface TemplatingOtherBuildEnvVarsImporter extends OtherBuildEnvVarsImporter, VarTemplater {
+public interface VarTemplater {
+
+    /**
+     * Returns the variable name template being used when importing environment
+     * variables into a given build
+     * 
+     * @return Variable name template to be used when assigning new variable names
+     */
+    public String getVarNameTemplate();
 
 }
