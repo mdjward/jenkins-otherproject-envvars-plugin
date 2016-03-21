@@ -36,11 +36,13 @@ import java.util.regex.Pattern;
 
 /**
  * EnvContributingVarsImporter - makes use of build actions to handle the import
- * of environment variables into a given build
+ * of environment variables into a given build by delegating to a public
+ * mechanism to directly copy from a source map to a target map (applying
+ * templating along the way)
  * 
  * @author M.D.Ward <dev@mattdw.co.uk>
  */
-public class EnvContributingVarsImporter implements TemplatingOtherBuildEnvVarsImporter {
+public class EnvContributingVarsImporter implements TemplatingOtherBuildEnvVarsImporter, EnvVarsCopier<Map<String, String>> {
 
     /**
      * String.format (printf) template to which the original environment
@@ -97,7 +99,27 @@ public class EnvContributingVarsImporter implements TemplatingOtherBuildEnvVarsI
     public void importVars(Run<?, ?> targetBuild, Map<String, String> otherBuildEnvVars) {
         targetBuild.replaceAction(new ContributingAction(otherBuildEnvVars));
     }
-    
+
+    /**
+     * Copies variables from a source map to target map, applying the variable
+     * name templating as configured
+     * 
+     * @param source
+     * @param target 
+     */
+    @Override
+    public void copyEnvVars(
+        Map<String, String> source,
+        Map<String, String> target
+    ) {
+        for (String key : source.keySet()) {
+            target.put(
+                String.format(varNameTemplate, key),
+                source.get(key)
+            );
+        }
+    }
+
     /**
      * Indicates whether or not a given variable name is of a valid format
      * 
@@ -132,9 +154,9 @@ public class EnvContributingVarsImporter implements TemplatingOtherBuildEnvVarsI
         // Return TRUE only if one instance has been located
         return count == 1;
     }
-    
-    
-    
+
+
+
     /**
      * ContributionAction - protected inner class implementing
      * {@link EnvironmentContributingAction} to contribute environment variables
@@ -164,6 +186,8 @@ public class EnvContributingVarsImporter implements TemplatingOtherBuildEnvVarsI
          * (notionally the current build, but the specific build provision is
          * decoupled from this implementation)
          * 
+         * This defers to the copyEnvVars method in the encapsulating instance
+         * 
          * @param build
          *      Build for which environment variables are to be contributed;
          *      not used in this implementation
@@ -172,12 +196,7 @@ public class EnvContributingVarsImporter implements TemplatingOtherBuildEnvVarsI
          */
         @Override
         public void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env) {
-            for (String key : this.otherBuildEnvVars.keySet()) {
-                env.put(
-                    String.format(varNameTemplate, key),
-                    otherBuildEnvVars.get(key)
-                );
-            }
+            copyEnvVars(otherBuildEnvVars, env);
         }
 
         /**
