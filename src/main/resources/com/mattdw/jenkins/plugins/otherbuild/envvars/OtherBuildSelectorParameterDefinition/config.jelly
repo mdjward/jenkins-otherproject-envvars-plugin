@@ -23,4 +23,15 @@
         </f:entry>
     </f:optionalBlock>
     
+    <f:optionalBlock
+        name="doVariableImport"
+        title="${%Import variables from this build}"
+        inline="true"
+        checked="${instance.doVariableImport}"
+    >
+        <f:entry title="${%Variable name template}" field="varNameTemplate">
+            <f:textbox/>
+        </f:entry>
+    </f:optionalBlock>
+
 </j:jelly>
