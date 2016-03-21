@@ -40,11 +40,11 @@ import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.VarTemplateNameAwa
  * 
  * @param <V>
  */
-public class ImportVarsConfiguration <V extends VarTemplateNameAware & VarImporterOrCopier> {
+public class ImportVarsConfiguration <V extends VarTemplateNameAware> {
 
-    protected String projectName;
-    protected String buildId;
-    protected V varTemplater;
+    protected final String projectName;
+    protected final String buildId;
+    protected final V varTemplater;
 
     public ImportVarsConfiguration(String projectName, String buildId, V varTemplater) {
         this.projectName = projectName;
@@ -52,10 +52,6 @@ public class ImportVarsConfiguration <V extends VarTemplateNameAware & VarImport
         this.varTemplater = varTemplater;
     }
     
-    public ImportVarsConfiguration() {
-        this(null, null, null);
-    }
-
     public String getProjectName() {
         return projectName;
     }
@@ -66,18 +62,6 @@ public class ImportVarsConfiguration <V extends VarTemplateNameAware & VarImport
 
     public V getVarTemplater() {
         return varTemplater;
-    }
-
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
-    }
-
-    public void setBuildId(String buildId) {
-        this.buildId = buildId;
-    }
-
-    public void setVarTemplater(V varTemplater) {
-        this.varTemplater = varTemplater;
     }
     
 }
