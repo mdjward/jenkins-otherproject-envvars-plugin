@@ -42,7 +42,7 @@ import java.util.regex.Pattern;
  * 
  * @author M.D.Ward <dev@mattdw.co.uk>
  */
-public class EnvContributingVarsImporter implements TemplatingOtherBuildEnvVarsImporter, EnvVarsCopier<Map<String, String>> {
+public class EnvContributingVarsImporter implements TemplatingOtherBuildEnvVarsImporter, TemplatingEnvVarsCopier<Map<String, String>> {
 
     /**
      * String.format (printf) template to which the original environment
