@@ -28,6 +28,12 @@
 
 package com.mattdw.jenkins.plugins.otherbuild.envvars;
 
+import com.mattdw.jenkins.plugins.otherbuild.envvars.execution.ImportVarsConfiguration;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.execution.factory.ImportVarsExecutorFactory;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.EnvContributingVarsImporter;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.EnvVarsCopier;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.TemplatingEnvVarsCopier;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.TemplatingOtherBuildEnvVarsImporter;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.options.OtherProjectBuildOptionsProvider;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.options.ResultFilteringOtherProjectBuildOptionsProvider;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.options.ResultOptionsProvider;
@@ -36,19 +42,21 @@ import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.project.ProjectNot
 import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.project.SingletonCallExternalProjectProvider;
 import hudson.Extension;
 import hudson.model.AbstractProject;
+import hudson.model.Descriptor.FormException;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
+import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import java.io.IOException;
+import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-
 
 
 
@@ -59,23 +67,62 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 public class OtherBuildSelectorParameterDefinition extends ParameterDefinition {
 
-    protected String buildResultFilter;
-    protected boolean filterByBuildResult;
-    protected String projectName;
+    protected final String buildResultFilter;
+    protected final String projectName;
+    protected final TemplatingEnvVarsCopier varImporter;
+
+    protected transient ImportVarsExecutorFactory builderFactory;
+
+
     
-    @DataBoundConstructor
     public OtherBuildSelectorParameterDefinition(
-        String name,
-        String description,
-        String projectName,
-        boolean filterByBuildResult,
-        String buildResultFilter
+        final String name,
+        final String description,
+        final String projectName,
+        final String buildResultFilter,
+        final TemplatingEnvVarsCopier varImporter,
+        final ImportVarsExecutorFactory<EnvVarsCopier, TemplatingEnvVarsCopier, ?> builderFactory
     ) {
         super(name, description);
 
         this.projectName = projectName;
-        this.filterByBuildResult = filterByBuildResult;
-        this.buildResultFilter = (filterByBuildResult ? buildResultFilter : null);
+        this.buildResultFilter = buildResultFilter;
+        this.varImporter = varImporter;
+        this.builderFactory = builderFactory;
+    }
+
+    @DataBoundConstructor
+    public OtherBuildSelectorParameterDefinition(
+        final String name,
+        final String description,
+        final String projectName,
+        final boolean filterByBuildResult,
+        final String buildResultFilter,
+        final boolean doVariableImport,
+        final String varNameTemplate
+    ) throws FormException {
+        this(name,
+            description,
+            projectName,
+            (filterByBuildResult ? buildResultFilter : null),
+            validateEnvVarsImporter(doVariableImport, varNameTemplate),
+            new ImportVarsExecutorFactory.CopierImpl()
+        );
+    }
+    
+    protected static TemplatingEnvVarsCopier validateEnvVarsImporter(
+        final boolean doVariableImport,
+        final String varNameTemplate
+    ) {
+        try {
+            if (doVariableImport == false) {
+                throw new IllegalArgumentException();
+            }
+            
+            return new EnvContributingVarsImporter(varNameTemplate);
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 
     public String getBuildResultFilter() {
@@ -83,24 +130,56 @@ public class OtherBuildSelectorParameterDefinition extends ParameterDefinition {
     }
 
     public boolean isFilterByBuildResult() {
-        return this.filterByBuildResult;
+        return (this.buildResultFilter != null);
     }
 
     public boolean getFilterByBuildResult() {
         return this.isFilterByBuildResult();
     }
 
+    public boolean isDoVariableImport() {
+        return (this.varImporter != null);
+    }
+
+    public boolean getDoVariableImport() {
+        return this.isDoVariableImport();
+    }
+
+    public String getVarNameTemplate() {
+        return (
+            this.varImporter != null
+            ? this.varImporter.getVarNameTemplate()
+            : null
+        );
+    }
+
     public String getProjectName() {
         return this.projectName;
     }
 
+    protected void preCreateValue() {
+        if (this.builderFactory == null) {
+            this.builderFactory = new ImportVarsExecutorFactory.CopierImpl();
+        }
+    }
+
     @Override
     public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
+        this.preCreateValue();
+
         if (!jo.containsKey("name") || !jo.containsKey("value")) {
             return null;
         }
 
-        return new OtherBuildSelectorParameterValue((String) jo.get("name"), (String) jo.get("value"));
+        return new OtherBuildSelectorParameterValue(
+            jo.getString("name"),
+            new ImportVarsConfiguration(
+                this.projectName,
+                jo.getString("value"),
+                this.varImporter
+            ),
+            this.builderFactory.createBuilder()
+        );
     }
 
     @Override
@@ -173,6 +252,30 @@ public class OtherBuildSelectorParameterDefinition extends ParameterDefinition {
             } catch (ProjectNotFoundException ex) {
                 return new ListBoxModel();
             }
+        }
+        
+        /**
+         * Performs validation on any submitted value for varImporter;
+         * automatically triggered by Jenkins
+         * 
+         * @param value
+         *      Given value of varImporter (injected as a query parameter)
+         * @return
+         *      {@link FormValidation}.ok() if value is valid;
+         *      otherwise FormValidation.error()
+         * @throws IOException
+         *      If any input/output errors occur indirectly as a result of
+         *      executing this method
+         * @throws ServletException
+         *      If any Servlet errors occur indirectly as a result of
+         *      executing this method
+         */
+        public FormValidation doCheckVarNameTemplate(@QueryParameter String value) throws IOException, ServletException {
+            return (
+                value.isEmpty() || EnvContributingVarsImporter.isVarNameTemplateValid(value)
+                ? FormValidation.ok()
+                : FormValidation.error("Variable name template must contain one instance of '%s' for string population")
+            );
         }
 
         @Override

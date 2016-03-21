@@ -70,9 +70,12 @@ public interface ImportVarsExecutorFactory <V extends VarImporterOrCopier, T ext
         }
 
         public CopierImpl() {
-            super();
+            this(
+                new SingletonCallExternalProjectProvider(),
+                new NamedBuildExternalBuildProvider()
+            );
         }
-        
+
         @Override
         public ImportVarsExecutor.CopierImpl createBuilder() {
             return new ImportVarsExecutor.CopierImpl(
@@ -93,7 +96,10 @@ public interface ImportVarsExecutorFactory <V extends VarImporterOrCopier, T ext
         }
 
         public ImporterImpl() {
-            super();
+            this(
+                new SingletonCallExternalProjectProvider(),
+                new NamedBuildExternalBuildProvider()
+            );
         }
         
         @Override
@@ -137,16 +143,6 @@ abstract class AbstractImpl <V extends VarImporterOrCopier, T extends VarTemplat
     ) {
         this.projectProvider = projectProvider;
         this.buildProvider = buildProvider;
-    }
-
-    /**
-     * 
-     */
-    public AbstractImpl() {
-        this(
-            new SingletonCallExternalProjectProvider(),
-            new NamedBuildExternalBuildProvider()
-        );
     }
 
 }

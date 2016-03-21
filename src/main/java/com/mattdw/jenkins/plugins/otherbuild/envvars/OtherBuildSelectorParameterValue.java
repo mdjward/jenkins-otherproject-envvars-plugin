@@ -28,11 +28,15 @@
 
 package com.mattdw.jenkins.plugins.otherbuild.envvars;
 
+import com.mattdw.jenkins.plugins.otherbuild.envvars.execution.ImportVarsConfiguration;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.execution.ImportVarsExecutor;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.TemplatingEnvVarsCopier;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.OtherBuildVarImportException;
 import hudson.EnvVars;
-import hudson.model.AbstractBuild;
 import hudson.model.Run;
 import hudson.model.StringParameterValue;
-import java.util.Map;
+import hudson.model.TaskListener;
+import java.io.IOException;
 
 
 
@@ -43,23 +47,57 @@ import java.util.Map;
  */
 public class OtherBuildSelectorParameterValue extends StringParameterValue {
 
-    public OtherBuildSelectorParameterValue(String name, String value) {
-        super(name, value);
-    }
+    private final ImportVarsConfiguration<TemplatingEnvVarsCopier<EnvVars>> configuration;
+    private final ImportVarsExecutor executor;
+    private final TaskListener dummyListener;
 
-    @Override
-    public void buildEnvironment(Run<?, ?> build, EnvVars env) {
-        super.buildEnvironment(build, env); //To change body of generated methods, choose Tools | Templates.
+    public OtherBuildSelectorParameterValue(
+        final String parameterName,
+        final ImportVarsConfiguration configuration,
+        final ImportVarsExecutor executor,
+        final TaskListener dummyListener
+    ) {
+        super(parameterName, configuration.getBuildId());
+
+        this.configuration = configuration;
+        this.executor = executor;
+        this.dummyListener = dummyListener;
+    }
+    
+    public OtherBuildSelectorParameterValue(
+        final String parameterName,
+        final ImportVarsConfiguration configuration,
+        final ImportVarsExecutor executor
+    ) {
+        this(parameterName, configuration, executor, TaskListener.NULL);
     }
     
     @Override
-    public void buildEnvVars(AbstractBuild<?, ?> build, EnvVars env) {
-        super.buildEnvVars(build, env); //To change body of generated methods, choose Tools | Templates.
-    }
+    public void buildEnvironment(Run<?, ?> build, EnvVars env) {
+        super.buildEnvironment(build, env);
 
-    @Override
-    public void buildEnvVars(AbstractBuild<?, ?> build, Map<String, String> env) {
-        super.buildEnvVars(build, env); //To change body of generated methods, choose Tools | Templates.
+        TemplatingEnvVarsCopier<EnvVars> varCopier = this.configuration.getVarTemplater();
+        
+        if (varCopier != null) {
+            this.doEnvImport(varCopier, env);
+        }
     }
-
+    
+    protected void doEnvImport(
+        TemplatingEnvVarsCopier<EnvVars> varCopier,
+        EnvVars env
+    ) throws RuntimeException {
+        try {
+            this.executor.perform(
+                this.configuration,
+                varCopier,
+                env,
+                this.dummyListener,
+                null
+            );
+        } catch (InterruptedException | IOException | OtherBuildVarImportException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+    
 }
