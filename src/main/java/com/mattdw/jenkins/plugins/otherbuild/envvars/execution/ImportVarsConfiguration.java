@@ -28,7 +28,6 @@
 
 package com.mattdw.jenkins.plugins.otherbuild.envvars.execution;
 
-import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.VarImporterOrCopier;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.VarTemplateNameAware;
 
 

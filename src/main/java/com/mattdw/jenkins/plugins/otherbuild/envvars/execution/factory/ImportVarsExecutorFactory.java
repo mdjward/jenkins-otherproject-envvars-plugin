@@ -31,7 +31,10 @@ package com.mattdw.jenkins.plugins.otherbuild.envvars.execution.factory;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.execution.ImportVarsExecutor;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.EnvVarsCopier;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.OtherBuildEnvVarsImporter;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.TemplatingEnvVarsCopier;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.TemplatingOtherBuildEnvVarsImporter;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.VarImporterOrCopier;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.VarTemplateNameAware;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.build.ExternalBuildProvider;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.build.NamedBuildExternalBuildProvider;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.project.ExternalProjectProvider;
@@ -47,14 +50,17 @@ import hudson.model.TaskListener;
  * ImportVarsExecutorFactory 
  * 
  * @author M.D.Ward <matthew.ward@byng.co>
+ * @param <V>
+ * @param <T>
+ * @param <E>
  */
-public interface ImportVarsExecutorFactory <V extends VarImporterOrCopier, E extends ImportVarsExecutor<EnvVars, V, TaskListener>> {
+public interface ImportVarsExecutorFactory <V extends VarImporterOrCopier, T extends VarTemplateNameAware, E extends ImportVarsExecutor<EnvVars, V, T, TaskListener>> {
 
     public E createBuilder();
 
 
 
-    public static class CopierImpl extends AbstractImpl<EnvVarsCopier, ImportVarsExecutor.CopierImpl> {
+    public static class CopierImpl extends AbstractImpl<EnvVarsCopier, TemplatingEnvVarsCopier, ImportVarsExecutor.CopierImpl> {
 
         public CopierImpl(
             ExternalProjectProvider<AbstractProject> projectProvider,
@@ -77,7 +83,7 @@ public interface ImportVarsExecutorFactory <V extends VarImporterOrCopier, E ext
 
     }
     
-    public static class ImporterImpl extends AbstractImpl<OtherBuildEnvVarsImporter, ImportVarsExecutor.ImporterImpl> {
+    public static class ImporterImpl extends AbstractImpl<OtherBuildEnvVarsImporter, TemplatingOtherBuildEnvVarsImporter, ImportVarsExecutor.ImporterImpl> {
 
         public ImporterImpl(
             ExternalProjectProvider<AbstractProject> projectProvider,
@@ -104,7 +110,7 @@ public interface ImportVarsExecutorFactory <V extends VarImporterOrCopier, E ext
 
 
 
-abstract class AbstractImpl <V extends VarImporterOrCopier, E extends ImportVarsExecutor<EnvVars, V, TaskListener>> implements ImportVarsExecutorFactory<V, E> {
+abstract class AbstractImpl <V extends VarImporterOrCopier, T extends VarTemplateNameAware, E extends ImportVarsExecutor<EnvVars, V, T, TaskListener>> implements ImportVarsExecutorFactory<V, T, E> {
 
     /**
      * Project provider mechanism for the target build from which

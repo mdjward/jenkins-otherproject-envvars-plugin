@@ -30,7 +30,10 @@ package com.mattdw.jenkins.plugins.otherbuild.envvars.execution;
 
 import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.EnvVarsCopier;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.OtherBuildEnvVarsImporter;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.TemplatingEnvVarsCopier;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.TemplatingOtherBuildEnvVarsImporter;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.VarImporterOrCopier;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.VarTemplateNameAware;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.OtherBuildVarImportException;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.build.ExternalBuildProvider;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.project.ExternalProjectProvider;
@@ -40,7 +43,6 @@ import hudson.model.AbstractProject;
 import hudson.model.TaskListener;
 import java.io.IOException;
 import java.util.Map;
-
 
 
 
@@ -54,24 +56,26 @@ import java.util.Map;
  *      {@link String} types for both key and value
  * @param <V>
  *      [Super]type for environment var copier; must extend {@link VarImporterOrCopier}
+ * @param <T>
+ *      [Super]type for template aware generic used in {@link ImportVarsConfiguration};
+ *      must extend VarTemplateNameAware
  * @param <L>
  *      [Super]type for task listener; must extend {@link TaskListener}
  * 
  */
-public interface ImportVarsExecutor <M extends Map<String, String>, V extends VarImporterOrCopier, L extends TaskListener> {
+public interface ImportVarsExecutor <M extends Map<String, String>, V extends VarImporterOrCopier, T extends VarTemplateNameAware, L extends TaskListener> {
     
     public ImportVarsResult perform(
-        String projectName,
-        String buildId,
-        M currentBuildVars,
+        ImportVarsConfiguration<T> configuration,
         V envVarTransferAgent,
+        M currentBuildVars,
         L listener,
         AbstractBuild currentBuild
     ) throws InterruptedException, IOException, OtherBuildVarImportException;
 
 
 
-    public static class CopierImpl extends AbstractImpl<EnvVarsCopier> {
+    public static class CopierImpl extends AbstractImpl<EnvVarsCopier, TemplatingEnvVarsCopier> {
 
         public CopierImpl(
             ExternalProjectProvider projectProvider,
@@ -91,12 +95,12 @@ public interface ImportVarsExecutor <M extends Map<String, String>, V extends Va
         ) {
             varCopier.copyEnvVars(otherBuildEnvVars, currentBuildEnvVars);
         }
-
+        
     }
     
     
     
-    public static class ImporterImpl extends AbstractImpl<OtherBuildEnvVarsImporter> {
+    public static class ImporterImpl extends AbstractImpl<OtherBuildEnvVarsImporter, TemplatingOtherBuildEnvVarsImporter> {
 
         public ImporterImpl(
             ExternalProjectProvider<AbstractProject> projectProvider,
@@ -123,7 +127,7 @@ public interface ImportVarsExecutor <M extends Map<String, String>, V extends Va
 
 
 
-abstract class AbstractImpl <V extends VarImporterOrCopier> implements ImportVarsExecutor<EnvVars, V, TaskListener> {
+abstract class AbstractImpl <V extends VarImporterOrCopier, T extends VarTemplateNameAware> implements ImportVarsExecutor<EnvVars, V, T, TaskListener> {
 
     /**
      * Project provider mechanism for the target build from which
@@ -152,34 +156,27 @@ abstract class AbstractImpl <V extends VarImporterOrCopier> implements ImportVar
         this.buildProvider = buildProvider;
     }
 
-    /**
-     * 
-     * @param projectName
-     * @param buildId
-     * @param currentBuildVars
-     * @param varCopier
-     * @param listener
-     * @throws InterruptedException
-     * @throws IOException
-     * @throws OtherBuildVarImportException 
-     */
     @Override
     public final ImportVarsResult perform(
-        String projectName,
-        String buildId,
-        EnvVars currentBuildVars,
+        ImportVarsConfiguration<T> configuration,
         V envVarTransferAgent,
+        EnvVars currentBuildVars,
         TaskListener listener,
         AbstractBuild currentBuild
     ) throws InterruptedException, IOException, OtherBuildVarImportException {
         final int originalSize = currentBuildVars.size();
+        final String projectName = configuration.getProjectName();
+        final String buildId = configuration.getBuildId();
 
-        final AbstractProject otherProject = this.projectProvider.provideProject(projectName);
+        final AbstractProject otherProject = this.projectProvider.provideProject(
+            projectName
+        );
+
         final AbstractBuild otherBuild = this.buildProvider.provideBuild(
             otherProject,
             currentBuildVars.expand(buildId)
         );
-        
+
         final Map<String, String> otherBuildEnvVars = otherBuild.getEnvironment(listener);
 
         /*
