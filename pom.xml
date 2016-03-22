@@ -12,7 +12,7 @@
     </parent>
     <groupId>com.mattdw.jenkins.plugins</groupId>
     <artifactId>otherbuild-envvars</artifactId>
-    <version>2.0.0</version>
+    <version>2.0.1</version>
     <packaging>hpi</packaging>
 
     <name>Import other build env vars plugin</name>
