@@ -56,18 +56,18 @@ public class OtherBuildSelectorParameterValue extends StringParameterValue {
      * importer 
      */
     private final ImportVarsConfiguration<TemplatingEnvVarsCopier<EnvVars>> configuration;
-    
+
     /**
      * Variable importer mechanism; a NULL value indicates that variable import
      * will not happen as part of environment variable contribution
      */
-    private final ImportVarsExecutor executor;
-    
+    private final transient ImportVarsExecutor executor;
+
     /**
      * Build listener - necessary for the executor to derive an environment
      * from a past build
      */
-    private final TaskListener listener;
+    private final transient TaskListener listener;
 
     
     
@@ -151,7 +151,7 @@ public class OtherBuildSelectorParameterValue extends StringParameterValue {
          * superclass method
          */
         super.buildEnvironment(build, env);
-
+        
         // Retrieve the templater for a null check
         TemplatingEnvVarsCopier<EnvVars> varCopier = this.configuration.getVarTemplater();
 
