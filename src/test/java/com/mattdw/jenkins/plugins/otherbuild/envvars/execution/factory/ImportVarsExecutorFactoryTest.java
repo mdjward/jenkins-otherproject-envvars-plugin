@@ -87,8 +87,8 @@ public class ImportVarsExecutorFactoryTest {
     public void testCopierCreateBuilder() throws Exception {
 
         ImportVarsExecutor[] executors = new ImportVarsExecutor[]{
-            this.copierFactory.createBuilder(),
-            this.importerFactory.createBuilder()
+            this.copierFactory.createExecutor(),
+            this.importerFactory.createExecutor()
         };
         
         for (ImportVarsExecutor executor : executors) {

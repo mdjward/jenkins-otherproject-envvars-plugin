@@ -71,7 +71,7 @@ public class OtherBuildSelectorParameterDefinition extends ParameterDefinition {
     protected final String projectName;
     protected final TemplatingEnvVarsCopier varImporter;
 
-    protected transient ImportVarsExecutorFactory builderFactory;
+    protected transient ImportVarsExecutorFactory executorFactory;
 
 
     
@@ -81,14 +81,14 @@ public class OtherBuildSelectorParameterDefinition extends ParameterDefinition {
         final String projectName,
         final String buildResultFilter,
         final TemplatingEnvVarsCopier varImporter,
-        final ImportVarsExecutorFactory<EnvVarsCopier, TemplatingEnvVarsCopier, ?> builderFactory
+        final ImportVarsExecutorFactory<EnvVarsCopier, TemplatingEnvVarsCopier, ?> executorFactory
     ) {
         super(name, description);
 
         this.projectName = projectName;
         this.buildResultFilter = buildResultFilter;
         this.varImporter = varImporter;
-        this.builderFactory = builderFactory;
+        this.executorFactory = executorFactory;
     }
 
     @DataBoundConstructor
@@ -100,17 +100,17 @@ public class OtherBuildSelectorParameterDefinition extends ParameterDefinition {
         final String buildResultFilter,
         final boolean doVariableImport,
         final String varNameTemplate
-    ) throws FormException {
+    ) {
         this(name,
             description,
             projectName,
             (filterByBuildResult ? buildResultFilter : null),
-            validateEnvVarsImporter(doVariableImport, varNameTemplate),
+            validateVarNameTemplate(doVariableImport, varNameTemplate),
             new ImportVarsExecutorFactory.CopierImpl()
         );
     }
     
-    protected static TemplatingEnvVarsCopier validateEnvVarsImporter(
+    protected static TemplatingEnvVarsCopier validateVarNameTemplate(
         final boolean doVariableImport,
         final String varNameTemplate
     ) {
@@ -118,9 +118,9 @@ public class OtherBuildSelectorParameterDefinition extends ParameterDefinition {
             if (doVariableImport == false) {
                 throw new IllegalArgumentException();
             }
-            
+
             return new EnvContributingVarsImporter(varNameTemplate);
-        } catch (IllegalArgumentException ex) {
+        } catch (Throwable ex) {
             return null;
         }
     }
@@ -158,8 +158,8 @@ public class OtherBuildSelectorParameterDefinition extends ParameterDefinition {
     }
 
     protected void preCreateValue() {
-        if (this.builderFactory == null) {
-            this.builderFactory = new ImportVarsExecutorFactory.CopierImpl();
+        if (this.executorFactory == null) {
+            this.executorFactory = new ImportVarsExecutorFactory.CopierImpl();
         }
     }
 
@@ -178,7 +178,7 @@ public class OtherBuildSelectorParameterDefinition extends ParameterDefinition {
                 jo.getString("value"),
                 this.varImporter
             ),
-            this.builderFactory.createBuilder()
+            this.executorFactory.createExecutor()
         );
     }
 

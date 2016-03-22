@@ -232,7 +232,7 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
 
         try {
 
-            ImportVarsResult result = this.executorFactory.createBuilder().perform(
+            ImportVarsResult result = this.executorFactory.createExecutor().perform(
                 new ImportVarsConfiguration(
                     this.projectName,
                     this.buildId,

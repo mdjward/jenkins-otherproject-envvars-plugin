@@ -35,7 +35,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Result;
 import hudson.util.ListBoxModel;
 import hudson.util.RunList;
-import java.text.SimpleDateFormat;
 
 
 

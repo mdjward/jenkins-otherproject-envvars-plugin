@@ -49,19 +49,19 @@ public class OtherBuildSelectorParameterValue extends StringParameterValue {
 
     private final ImportVarsConfiguration<TemplatingEnvVarsCopier<EnvVars>> configuration;
     private final ImportVarsExecutor executor;
-    private final TaskListener dummyListener;
+    private final TaskListener listener;
 
     public OtherBuildSelectorParameterValue(
         final String parameterName,
         final ImportVarsConfiguration configuration,
         final ImportVarsExecutor executor,
-        final TaskListener dummyListener
+        final TaskListener listener
     ) {
         super(parameterName, configuration.getBuildId());
 
         this.configuration = configuration;
         this.executor = executor;
-        this.dummyListener = dummyListener;
+        this.listener = listener;
     }
     
     public OtherBuildSelectorParameterValue(
@@ -71,7 +71,11 @@ public class OtherBuildSelectorParameterValue extends StringParameterValue {
     ) {
         this(parameterName, configuration, executor, TaskListener.NULL);
     }
-    
+
+    public ImportVarsConfiguration<TemplatingEnvVarsCopier<EnvVars>> getConfiguration() {
+        return configuration;
+    }
+
     @Override
     public void buildEnvironment(Run<?, ?> build, EnvVars env) {
         super.buildEnvironment(build, env);
@@ -92,7 +96,7 @@ public class OtherBuildSelectorParameterValue extends StringParameterValue {
                 this.configuration,
                 varCopier,
                 env,
-                this.dummyListener,
+                this.listener,
                 null
             );
         } catch (InterruptedException | IOException | OtherBuildVarImportException ex) {

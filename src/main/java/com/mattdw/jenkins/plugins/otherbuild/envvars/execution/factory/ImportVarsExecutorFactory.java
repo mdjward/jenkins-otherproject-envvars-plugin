@@ -56,7 +56,7 @@ import hudson.model.TaskListener;
  */
 public interface ImportVarsExecutorFactory <V extends VarImporterOrCopier, T extends VarTemplateNameAware, E extends ImportVarsExecutor<EnvVars, V, T, TaskListener>> {
 
-    public E createBuilder();
+    public E createExecutor();
 
 
 
@@ -77,7 +77,7 @@ public interface ImportVarsExecutorFactory <V extends VarImporterOrCopier, T ext
         }
 
         @Override
-        public ImportVarsExecutor.CopierImpl createBuilder() {
+        public ImportVarsExecutor.CopierImpl createExecutor() {
             return new ImportVarsExecutor.CopierImpl(
                 this.projectProvider,
                 this.buildProvider
@@ -103,7 +103,7 @@ public interface ImportVarsExecutorFactory <V extends VarImporterOrCopier, T ext
         }
         
         @Override
-        public ImportVarsExecutor.ImporterImpl createBuilder() {
+        public ImportVarsExecutor.ImporterImpl createExecutor() {
             return new ImportVarsExecutor.ImporterImpl(
                 this.projectProvider,
                 this.buildProvider

@@ -23,16 +23,21 @@
  */
 package com.mattdw.jenkins.plugins.otherbuild.envvars;
 
-import java.io.IOException;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.execution.ImportVarsConfiguration;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.execution.ImportVarsExecutor;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.execution.factory.ImportVarsExecutorFactory;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.TemplatingEnvVarsCopier;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.options.OtherProjectBuildOptionsProvider;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.options.ResultFilteringOtherProjectBuildOptionsProvider;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.options.ResultOptionsProvider;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.project.ExternalProjectProvider;
 import com.mattdw.jenkins.plugins.otherbuild.envvars.provider.project.ProjectNotFoundException;
+import hudson.EnvVars;
 import hudson.model.AbstractProject;
 import hudson.model.ParameterValue;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Result;
+import hudson.model.TaskListener;
 import hudson.util.ListBoxModel;
 import jenkins.model.Jenkins;
 import jenkins.model.Jenkins.JenkinsHolder;
@@ -54,9 +59,12 @@ public class OtherBuildSelectorParameterDefinitionTest {
     
     private final String parameterName = "PARAMETER NAME";
     private final String parameterDescription = "PARAMETER DESCRIPTION";
-    private final String buildResultFilter = Result.SUCCESS.toString();
     private final boolean filterByBuildResult = true;
+    private final String buildResultFilter = Result.SUCCESS.toString();
     private final String projectName = "PROJECT NAME";
+    private TemplatingEnvVarsCopier varImporter;
+    private ImportVarsExecutorFactory executorFactory;
+    private ImportVarsExecutor executor;
     private OtherBuildSelectorParameterDefinition parameter;
     private ResultOptionsProvider resultOptionsProvider;
     private ExternalProjectProvider projectProvider;
@@ -65,12 +73,17 @@ public class OtherBuildSelectorParameterDefinitionTest {
 
     @Before
     public void setUp() {
+        this.varImporter = mock(TemplatingEnvVarsCopier.class);
+        this.executorFactory = mock(ImportVarsExecutorFactory.class);
+        this.executor = mock(ImportVarsExecutor.class);
+        
         this.parameter = new OtherBuildSelectorParameterDefinition(
             this.parameterName,
             this.parameterDescription,
             this.projectName,
-            this.filterByBuildResult,
-            this.buildResultFilter
+            this.buildResultFilter,
+            this.varImporter,
+            this.executorFactory
         );
 
         this.descriptor = mock(OtherBuildSelectorParameterDefinition.DescriptorImpl.class);
@@ -82,6 +95,43 @@ public class OtherBuildSelectorParameterDefinitionTest {
         this.descriptor.buildOptionsProviderFactory = (OtherProjectBuildOptionsProvider.Factory<ResultFilteringOtherProjectBuildOptionsProvider, Result>) 
                 (this.buildOptionsProviderFactory = mock(OtherProjectBuildOptionsProvider.Factory.class))
         ;
+        
+        when(this.executorFactory.createExecutor()).thenReturn(this.executor);
+    }
+    
+    @Test
+    public void testDataBoundConstructorAndValidateVarNameTemplate() {
+        final String varNameTemplate = "VALID VARIABLE NAME TEMPLATE %s";
+        
+        this.parameter = new OtherBuildSelectorParameterDefinition(
+            this.parameterName,
+            this.parameterDescription,
+            this.projectName,
+            true,
+            this.buildResultFilter,
+            true,
+            varNameTemplate
+        );
+        
+        assertNotNull(this.parameter.getVarNameTemplate());
+        assertEquals(varNameTemplate, this.parameter.getVarNameTemplate());
+    }
+    
+    @Test
+    public void testDataBoundConstructorAssignsNullVarImporterIfInvalidNameTemplate() {
+        final String varNameTemplate = "VALID VARIABLE NAME TEMPLATE %s";
+        
+        this.parameter = new OtherBuildSelectorParameterDefinition(
+            this.parameterName,
+            this.parameterDescription,
+            this.projectName,
+            true,
+            this.buildResultFilter,
+            false,
+            varNameTemplate
+        );
+        
+        assertNull(this.parameter.getVarNameTemplate());
     }
 
     @Test
@@ -101,6 +151,31 @@ public class OtherBuildSelectorParameterDefinitionTest {
     }
 
     @Test
+    public void testPreCreateValue() throws Exception {
+        this.parameter = new OtherBuildSelectorParameterDefinition(
+            this.parameterName,
+            this.parameterDescription,
+            this.projectName,
+            this.buildResultFilter,
+            this.varImporter,
+            null
+        );
+
+        Class<?> parameterClass = OtherBuildSelectorParameterDefinition.class;
+        java.lang.reflect.Method preCreateMethod = parameterClass.getDeclaredMethod("preCreateValue");
+        java.lang.reflect.Field executorFactoryField = parameterClass.getDeclaredField("executorFactory");
+        
+        preCreateMethod.setAccessible(true);
+        executorFactoryField.setAccessible(true);
+        
+        preCreateMethod.invoke(this.parameter, new Object[0]);
+        Object currentExecutorFactory = executorFactoryField.get(this.parameter);
+        
+        assertNotSame(this.executorFactory, currentExecutorFactory);
+        assertTrue(currentExecutorFactory instanceof ImportVarsExecutorFactory.CopierImpl);
+    }
+    
+    @Test
     public void testCreateValue_StaplerRequest_JSONObject_handlesMissingKeys() {
         JSONObject jo = new JSONObject();
         
@@ -110,18 +185,36 @@ public class OtherBuildSelectorParameterDefinitionTest {
     }
 
     @Test
-    public void testCreateValue_StaplerRequest_JSONObject_returnsObject() {
+    public void testCreateValue_StaplerRequest_JSONObject_returnsObject() throws Exception {
         JSONObject jo = new JSONObject();
         
         jo.put("name", this.parameterName);
         jo.put("value", this.parameterDescription);
-        
+
         ParameterValue value = this.parameter.createValue(mock(StaplerRequest.class), jo);
         assertTrue(value instanceof OtherBuildSelectorParameterValue);
         
         OtherBuildSelectorParameterValue castValue = (OtherBuildSelectorParameterValue) value;
         assertSame(this.parameterName, castValue.getName());
         assertSame(this.parameterDescription, castValue.getValue());
+        
+        ImportVarsConfiguration<TemplatingEnvVarsCopier<EnvVars>> valueConfig = castValue.getConfiguration();
+        
+        assertSame(this.varImporter, valueConfig.getVarTemplater());
+        assertSame(this.projectName, valueConfig.getProjectName());
+        assertSame(this.parameterDescription, valueConfig.getBuildId());
+        
+        Class<?> valueClass = OtherBuildSelectorParameterValue.class;
+        java.lang.reflect.Field executorField = valueClass.getDeclaredField("executor");
+        java.lang.reflect.Field listenerField = valueClass.getDeclaredField("listener");
+
+        executorField.setAccessible(true);
+        listenerField.setAccessible(true);
+
+        assertSame(this.executor, executorField.get(castValue));
+        assertSame(TaskListener.NULL, listenerField.get(castValue));
+        
+        verify(this.executorFactory, times(1)).createExecutor();
     }
 
     @Test

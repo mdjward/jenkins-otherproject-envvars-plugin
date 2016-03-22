@@ -90,7 +90,7 @@ public class ImportOtherBuildEnvVarsBuilderTest {
         this.buildVars = mock(EnvVars.class);
         this.result = mock(ImportVarsResult.class);
 
-        when(this.executorFactory.createBuilder()).thenReturn(this.executor);
+        when(this.executorFactory.createExecutor()).thenReturn(this.executor);
     }
     
     @Test
@@ -231,7 +231,7 @@ public class ImportOtherBuildEnvVarsBuilderTest {
         verify(this.listener, times(1)).getLogger();
 
         verify(this.build, times(1)).getEnvironment(same(this.listener));
-        verify(this.executorFactory, times(1)).createBuilder();
+        verify(this.executorFactory, times(1)).createExecutor();
         
         verify(this.executor, times(1))
             .perform(
