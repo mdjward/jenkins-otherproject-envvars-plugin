@@ -46,9 +46,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ImportVarsExecutorTest {
     
-    private static final int CURRENT_BUILD_VARS_TOTAL = 5;
+    private static final int OTHER_BUILD_VARS_TOTAL = 5;
     private static final String PROJECT_NAME = "TARGET PROJECT NAME";
     private static final String BUILD_ID = "BUILD ID";
+    private static final int BUILD_NUMBER = 25;
 
     private ExternalProjectProvider<AbstractProject> projectProvider;
     private ExternalBuildProvider<AbstractProject, AbstractBuild> buildProvider;
@@ -83,22 +84,26 @@ public class ImportVarsExecutorTest {
         this.currentBuild = mock(AbstractBuild.class);
         this.otherBuild = mock(AbstractBuild.class);
 
-        when(this.currentBuildVars.size()).thenReturn(CURRENT_BUILD_VARS_TOTAL);
         when(this.currentBuildVars.expand(same(BUILD_ID))).thenReturn(BUILD_ID);
 
         when(this.projectProvider.provideProject(same(PROJECT_NAME))).thenReturn(this.otherProject);
         when(this.buildProvider.provideBuild(same(this.otherProject), same(BUILD_ID))).thenReturn(this.otherBuild);
+        when(this.otherBuild.getNumber()).thenReturn(BUILD_NUMBER);
         when(this.otherBuild.getEnvironment(same(this.listener))).thenReturn(this.otherBuildVars);
+
+        when(this.otherBuildVars.size()).thenReturn(OTHER_BUILD_VARS_TOTAL);
     }
 
     @After
     public void tearDown() throws Exception {
-        verify(this.currentBuildVars, atLeast(2)).size();
         verify(this.currentBuildVars, times(1)).expand(same(BUILD_ID));
 
         verify(this.projectProvider, times(1)).provideProject(same(PROJECT_NAME));
         verify(this.buildProvider, times(1)).provideBuild(same(this.otherProject), same(BUILD_ID));
+        verify(this.otherBuild, times(1)).getNumber();
         verify(this.otherBuild, times(1)).getEnvironment(same(this.listener));
+        
+        verify(this.otherBuildVars, times(1)).size();
     }
 
     @Test
@@ -120,8 +125,8 @@ public class ImportVarsExecutorTest {
         );
 
         assertSame(PROJECT_NAME, result.getProjectName());
-        assertSame(BUILD_ID, result.getBuildId());
-        assertEquals(0, result.getTotalVarsImported());
+        assertEquals(String.valueOf(BUILD_NUMBER), result.getBuildId());
+        assertEquals(OTHER_BUILD_VARS_TOTAL, result.getTotalVarsImported());
 
         verify(this.varCopier, times(1)).copyEnvVars(same(this.otherBuildVars), same(this.currentBuildVars));
     }
@@ -145,8 +150,8 @@ public class ImportVarsExecutorTest {
         );
 
         assertSame(PROJECT_NAME, result.getProjectName());
-        assertSame(BUILD_ID, result.getBuildId());
-        assertEquals(0, result.getTotalVarsImported());
+        assertEquals(String.valueOf(BUILD_NUMBER), result.getBuildId());
+        assertEquals(OTHER_BUILD_VARS_TOTAL, result.getTotalVarsImported());
 
         verify(this.varImporter, times(1)).importVars(same(this.currentBuild), same(this.otherBuildVars));
     }

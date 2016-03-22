@@ -320,7 +320,6 @@ abstract class AbstractImpl <V extends VarImporterOrCopier, T extends VarNameTem
         TaskListener listener,
         AbstractBuild currentBuild
     ) throws InterruptedException, IOException, OtherBuildVarImportException {
-        final int originalSize = currentBuildVars.size();
         final String projectName = configuration.getProjectName();
         final String buildId = configuration.getBuildId();
 
@@ -355,8 +354,8 @@ abstract class AbstractImpl <V extends VarImporterOrCopier, T extends VarNameTem
          */
         return new ImportVarsResult(
             projectName,
-            buildId,
-            (currentBuildVars.size() - originalSize)
+            String.valueOf(otherBuild.getNumber()),
+            otherBuildEnvVars.size()
         );
     }
 
