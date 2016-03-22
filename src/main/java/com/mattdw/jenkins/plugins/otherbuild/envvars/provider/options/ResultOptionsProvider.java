@@ -2,10 +2,10 @@
  * ResultOptionsProvider.java
  * Created 28-Feb-2016 17:17:13
  *
- * @author M.D.Ward <matthew.ward@byng.co>
+ * @author M.D.Ward <dev@mattdw.co.uk>
  * The MIT License
  *
- * Copyright 2016 M.D.Ward <matthew.ward@byng.co>.
+ * Copyright 2016 M.D.Ward <dev@mattdw.co.uk>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,18 +34,32 @@ import hudson.util.ListBoxModel;
 
 
 /**
- * ResultOptionsProvider 
+ * Defines a producer of presentable, user-readable result filtering options 
  * 
- * @author M.D.Ward <matthew.ward@byng.co>
+ * @author M.D.Ward <dev@mattdw.co.uk>
  */
 public interface ResultOptionsProvider {
 
+    /**
+     * Builds a {@link ListBoxModel} of options, each of which represents an
+     * enumerable build {@link Result} (state)
+     * 
+     * @return 
+     *      {@link ListBoxModel} of enumerable build results/states
+     */
     public ListBoxModel getBuildResultOptions();
     
     
     
+    /**
+     * Default implementation of {@link ResultOptionsProvider} which enumerates
+     * the five main Jenkins build results/states
+     */
     public static class Impl implements ResultOptionsProvider {
 
+        /**
+         * Defines the possible build results/states that are to be presented
+         */
         private static final Result[] RESULTS = new Result[] {
             Result.SUCCESS,
             Result.FAILURE,
@@ -54,25 +68,24 @@ public interface ResultOptionsProvider {
             Result.NOT_BUILT
         };
         
+        /**
+         * Builds a {@link ListBoxModel} of options, each of which represents an
+         * enumerable build {@link Result} (state)
+         * 
+         * @return 
+         *      {@link ListBoxModel} of enumerable build results/states
+         */
         @Override
         public ListBoxModel getBuildResultOptions() {
             ListBoxModel model = new ListBoxModel();
-            
+
             for (Result r : RESULTS) {
                 model.add(r.toString());
             }
-            
+
             return model;
         }
         
-    }
-    
-    
-    
-    public static interface Factory <R extends ResultOptionsProvider, A> {
-
-        public R buildOptionsProvider(A arguments);
-
     }
     
 }

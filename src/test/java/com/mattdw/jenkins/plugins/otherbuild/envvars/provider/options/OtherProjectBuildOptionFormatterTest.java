@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2016 M.D.Ward <matthew.ward@byng.co>.
+ * Copyright 2016 M.D.Ward <dev@mattdw.co.uk>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,23 +37,23 @@ import static org.mockito.Mockito.*;
 
 /**
  *
- * @author M.D.Ward <matthew.ward@byng.co>
+ * @author M.D.Ward <dev@mattdw.co.uk>
  */
 public class OtherProjectBuildOptionFormatterTest {
     
     private DateFormat dateFormat;
-    private OtherProjectBuildOptionFormatter formatter;
+    private BuildOptionFormatter formatter;
     
     @Before
     public void setUp() {
-        this.formatter = new OtherProjectBuildOptionFormatter.DefaultImpl(
+        this.formatter = new BuildOptionFormatter.DefaultImpl(
             (this.dateFormat = mock(DateFormat.class))
         );
     }
 
     @Test
     public void testDefaultConstructorUsesSimpleDateFormat() {
-        OtherProjectBuildOptionFormatter.DefaultImpl formatterImpl = new OtherProjectBuildOptionFormatter.DefaultImpl();
+        BuildOptionFormatter.DefaultImpl formatterImpl = new BuildOptionFormatter.DefaultImpl();
 
         assertTrue(formatterImpl.dateFormat instanceof SimpleDateFormat);
         assertNotNull(formatterImpl.dateFormat);

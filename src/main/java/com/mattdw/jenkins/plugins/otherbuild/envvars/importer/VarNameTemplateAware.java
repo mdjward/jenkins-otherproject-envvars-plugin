@@ -1,11 +1,11 @@
 /**
- * VarTemplater.java
+ * VarNameTemplateAware.java
  * Created 21-Mar-2016 12:07:38
  *
- * @author M.D.Ward <matthew.ward@byng.co>
+ * @author M.D.Ward <dev@mattdw.co.uk>
  * The MIT License
  *
- * Copyright 2016 M.D.Ward <matthew.ward@byng.co>.
+ * Copyright 2016 M.D.Ward <dev@mattdw.co.uk>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,11 +31,12 @@ package com.mattdw.jenkins.plugins.otherbuild.envvars.importer;
 
 
 /**
- * VarTemplateNameAware 
+ * VarNameTemplateAware - defines a supertype for an object which is aware of
+ a variable name template
  * 
- * @author M.D.Ward <matthew.ward@byng.co>
+ * @author M.D.Ward <dev@mattdw.co.uk>
  */
-public interface VarTemplateNameAware {
+public interface VarNameTemplateAware {
 
     /**
      * Returns the variable name template being used when importing environment

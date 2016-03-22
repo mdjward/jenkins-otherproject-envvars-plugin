@@ -1,11 +1,11 @@
 /**
- * OtherProjectBuildOptionFormatter.java
+ * BuildOptionFormatter.java
  * Created 15-Mar-2016 12:29:34
  *
- * @author M.D.Ward <matthew.ward@byng.co>
+ * @author M.D.Ward <dev@mattdw.co.uk>
  * The MIT License
  *
- * Copyright 2016 M.D.Ward <matthew.ward@byng.co>.
+ * Copyright 2016 M.D.Ward <dev@mattdw.co.uk>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,32 +36,70 @@ import hudson.model.Result;
 
 
 /**
- * OtherProjectBuildOptionFormatter 
+ * Formats options for past builds on another project to be presented to a user
  * 
- * @author M.D.Ward <matthew.ward@byng.co>
+ * @author M.D.Ward <dev@mattdw.co.uk>
  */
-public interface OtherProjectBuildOptionFormatter <B extends AbstractBuild> {
+public interface BuildOptionFormatter <B extends AbstractBuild> {
 
+    /**
+     * Produce an appropriately formatted string for a given build
+     * 
+     * @param build
+     *      Build to represent as a string
+     * @return 
+     *      String representing the given build
+     */
     public String formatBuild(B build);
     
     
     
-    public static class DefaultImpl implements OtherProjectBuildOptionFormatter<AbstractBuild> {
+    /**
+     * Default implementation of {@link BuildOptionFormatter} which formats builds
+     * as strings in the form:
+     * 
+     * [display name] - [result/status] ([date started])
+     */
+    public static class DefaultImpl implements BuildOptionFormatter<AbstractBuild> {
         
+        /**
+         * Default date format for presenting the build date as a string
+         */
         public static final DateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
 
+        /**
+         * Date format used in presenting the build date as a string
+         */
         protected final DateFormat dateFormat;
         
         
         
+        /**
+         * Constructor - creates a new instance of DefaultImpl
+         * 
+         * @param dateFormat
+         *      Date format used in presenting the build date as a string
+         */
         public DefaultImpl(final DateFormat dateFormat) {
             this.dateFormat = dateFormat;
         }
         
+        /**
+         * Constructor - creates a new instance of DefaultImpl assuming a default
+         * date format for presenting the build date as a string
+         */
         public DefaultImpl() {
             this(DEFAULT_DATE_FORMAT);
         }
 
+        /**
+         * Produce an appropriately formatted string for a given build
+         * 
+         * @param build
+         *      Build to represent as a string
+         * @return 
+         *      String representing the given build
+         */
         @Override
         public String formatBuild(AbstractBuild build) {
             Result result = build.getResult();

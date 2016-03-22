@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2016 M.D.Ward <matthew.ward@byng.co>.
+ * Copyright 2016 M.D.Ward <dev@mattdw.co.uk>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
  */
 package com.mattdw.jenkins.plugins.otherbuild.envvars.execution;
 
-import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.VarTemplateNameAware;
+import com.mattdw.jenkins.plugins.otherbuild.envvars.importer.VarNameTemplateAware;
 import org.junit.Before;
 import org.junit.Test;
 import static org.mockito.Mockito.*;
@@ -32,13 +32,13 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author M.D.Ward <matthew.ward@byng.co>
+ * @author M.D.Ward <dev@mattdw.co.uk>
  */
 public class ImportVarsConfigurationTest {
     
     private final String projectName = "PROJECT NAME";
     private final String buildId = "BUILD ID";
-    private VarTemplateNameAware varTemplater;
+    private VarNameTemplateAware varTemplater;
     private ImportVarsConfiguration config;
     
 
@@ -46,7 +46,7 @@ public class ImportVarsConfigurationTest {
     
     @Before
     public void setUp() {
-        this.varTemplater = mock(VarTemplateNameAware.class);
+        this.varTemplater = mock(VarNameTemplateAware.class);
         
         this.config = new ImportVarsConfiguration(
             this.projectName,

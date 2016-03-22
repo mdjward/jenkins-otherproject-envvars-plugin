@@ -1,4 +1,7 @@
-/*
+/**
+ * ImportOtherBuildEnvVarsBuilder.java
+ *
+ * @author M.D.Ward <dev@mattdw.co.uk>
  * The MIT License
  *
  * Copyright 2016 M.D.Ward <dev@mattdw.co.uk>.
@@ -75,8 +78,8 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
     private final TemplatingOtherBuildEnvVarsImporter varImporter;
 
     /**
-     * Factory for the "base builder" (sub-builder to which the actual builder
-     * logic is abstracted)
+     * Factory the build executor (to which the actual logic of importing build
+     * variables from another project is delegated)
      */
     private transient ImportVarsExecutorFactory executorFactory;
 
@@ -110,7 +113,7 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
     
     /**
      * Constructor - creates a new instance of ImportOtherBuildEnvVarsBuilder
-     * using a default base builder factory
+     * using a default executor factory
      * 
      * @param projectName
      *      Project name of the project to which the target build belongs
@@ -135,7 +138,8 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
     /**
      * Constructor - creates a new instance of ImportOtherBuildEnvVarsBuilder
      * using data bound arguments provided by Jenkins when a builder of this
-     * type is initialised or [re]configured
+     * type is initialised or [re]configured; this assumes a default variable
+     * importing implementation of {@link EnvContributingVarsImporter}
      * 
      * @param projectName
      *      Project name of the project to which the target build belongs
@@ -163,7 +167,8 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
     /**
      * Getter for projectName
      * 
-     * @return Project name of the project to which the target build belongs
+     * @return
+     *      Project name of the project to which the target build belongs
      */
     public String getProjectName() {
         return this.projectName;
@@ -172,8 +177,9 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
     /**
      * Getter for buildId
      * 
-     * @return Identifier of the target build from which environment variables
-     * are imported
+     * @return
+     *      Identifier of the target build from which environment variables
+     *      are imported
      */
     public String getBuildId() {
         return this.buildId;
@@ -182,9 +188,10 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
     /**
      * Pseudo-getter for varNameTemplate
      * 
-     * @return String.format (printf) template to which the original environment
-     * variable names will be provided (notionally, so as not to overwrite
-     * existing variables within the scope of the build)
+     * @return
+     *      String.format (printf) template to which the original environment
+     *      variable names will be provided (notionally, so as not to overwrite
+     *      existing variables within the scope of the build)
      */
     public String getVarNameTemplate() {
         return this.varImporter.getVarNameTemplate();
@@ -195,11 +202,12 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
      * ensuring that service properties have been set, or are initialised to
      * their nominal defaults
      * 
-     * This is primarily to resolve backwards compatibility issues
+     * This is primarily to resolve backwards compatibility issues as the plugin
+     * moves between versions
      * 
      * @throws RuntimeException 
      *      Implementation-specific runtime exceptions that may be thrown
-     *      within the scope of 
+     *      within the scope of individual service initialisation
      */
     protected void prePerform() throws RuntimeException {
         if (this.executorFactory == null) {
@@ -227,7 +235,7 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
         // Essential that services have been initialised
         this.prePerform();
 
-        // Logger is initialised out in method scope for use in all clauses
+        // Logger is initialised out of the try...catch scope for use in all clauses
         final PrintStream logger = listener.getLogger();
 
         try {
@@ -276,7 +284,9 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
      * Returns the descriptor of this extensible object, which is defined below
      * as a public, static inner class
      * 
-     * @return 
+     * @return
+     *      {@link DescriptorImpl} of this extensible object
+     * 
      * @see ImportOtherBuildEnvVarsBuilder.DescriptorImpl
      */
     @Override
@@ -293,6 +303,7 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
      * <p>
      * See <tt>src/main/resources/hudson/plugins/hello_world/HelloWorldBuilder/*.jelly</tt>
      * for the actual HTML fragment for the configuration screen.
+     * </p>
      */
     @Extension // This indicates to Jenkins that this is an implementation of an extension point.
     public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
@@ -301,7 +312,7 @@ public class ImportOtherBuildEnvVarsBuilder extends Builder implements SimpleBui
          * Constructor - creates a new instance of DescriptorImpl;
          * 
          * Initialises the descriptor and the persisted global configuration
-         * through invocation of load
+         * through invocation of <pre>load()</pre>
          */
         public DescriptorImpl() {
             load();

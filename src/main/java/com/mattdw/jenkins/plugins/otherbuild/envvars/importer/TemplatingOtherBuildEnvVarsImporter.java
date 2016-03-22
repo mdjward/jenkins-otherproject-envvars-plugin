@@ -1,4 +1,7 @@
-/*
+/**
+ * TemplatingOtherBuildEnvVarsImporter.java
+ *
+ * @author M.D.Ward <dev@mattdw.co.uk>
  * The MIT License
  *
  * Copyright 2016 M.D.Ward <dev@mattdw.co.uk>.
@@ -32,6 +35,6 @@ package com.mattdw.jenkins.plugins.otherbuild.envvars.importer;
  * 
  * @author M.D.Ward <dev@mattdw.co.uk>
  */
-public interface TemplatingOtherBuildEnvVarsImporter extends OtherBuildEnvVarsImporter, VarTemplateNameAware {
+public interface TemplatingOtherBuildEnvVarsImporter extends OtherBuildEnvVarsImporter, VarNameTemplateAware {
 
 }

@@ -1,4 +1,7 @@
-/*
+/**
+ * OtherBuildEnvVarsImporter.java
+ *
+ * @author M.D.Ward <dev@mattdw.co.uk>
  * The MIT License
  *
  * Copyright 2016 M.D.Ward <dev@mattdw.co.uk>.

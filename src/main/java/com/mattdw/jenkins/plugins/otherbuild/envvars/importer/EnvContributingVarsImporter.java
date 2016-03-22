@@ -1,4 +1,7 @@
-/*
+/**
+ * EnvContributingVarsImporter.java
+ *
+ * @author M.D.Ward <dev@mattdw.co.uk>
  * The MIT License
  *
  * Copyright 2016 M.D.Ward <dev@mattdw.co.uk>.
@@ -70,10 +73,10 @@ public class EnvContributingVarsImporter implements TemplatingOtherBuildEnvVarsI
                 String.format("Var name template %s is invalid", varNameTemplate)
             );
         }
-        
+
         this.varNameTemplate = varNameTemplate;
     }
-    
+
     /**
      * Getter for varNameTemplate
      * 
@@ -105,7 +108,9 @@ public class EnvContributingVarsImporter implements TemplatingOtherBuildEnvVarsI
      * name templating as configured
      * 
      * @param source
+     *      Source map from which to copy variables
      * @param target 
+     *      Target map on which to place variables with their templated name
      */
     @Override
     public void copyEnvVars(
@@ -136,7 +141,7 @@ public class EnvContributingVarsImporter implements TemplatingOtherBuildEnvVarsI
         // Compile a regular expresion pattern to locate %s inside a string
         Pattern p = Pattern.compile("(%s)");
         Matcher m = p.matcher(varNameTemplate);
-        
+
         // Not only must the pattern match, but we only want a single %s
         int count = 0;
         while (m.find()) {
@@ -150,7 +155,7 @@ public class EnvContributingVarsImporter implements TemplatingOtherBuildEnvVarsI
 
             count++;
         }
-        
+
         // Return TRUE only if one instance has been located
         return count == 1;
     }
@@ -186,7 +191,8 @@ public class EnvContributingVarsImporter implements TemplatingOtherBuildEnvVarsI
          * (notionally the current build, but the specific build provision is
          * decoupled from this implementation)
          * 
-         * This defers to the copyEnvVars method in the encapsulating instance
+         * This defers to the <pre>copyEnvVars()</pre> method in the
+         * encapsulating instance
          * 
          * @param build
          *      Build for which environment variables are to be contributed;

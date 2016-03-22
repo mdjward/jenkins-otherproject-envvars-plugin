@@ -2,10 +2,10 @@
  * EnvVarsCopier.java
  * Created 21-Mar-2016 09:42:34
  *
- * @author M.D.Ward <matthew.ward@byng.co>
+ * @author M.D.Ward <dev@mattdw.co.uk>
  * The MIT License
  *
- * Copyright 2016 M.D.Ward <matthew.ward@byng.co>.
+ * Copyright 2016 M.D.Ward <dev@mattdw.co.uk>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,12 +33,26 @@ import java.util.Map;
 
 
 /**
- * EnvVarsCopier 
+ * EnvVarsCopier - definition of a variable copier for transferring variables
+ * from one string/string key/value map to another
  * 
- * @author M.D.Ward <matthew.ward@byng.co>
+ * @author M.D.Ward <dev@mattdw.co.uk>
+ * 
+ * @param <M>
+ *      [Super]type for environment vars; must extend {@link Map} with
+ *      {@link String} types for both key and value
  */
 public interface EnvVarsCopier <M extends Map<String, String>> extends VarImporterOrCopier {
 
+    /**
+     * Copies variables from a source map to target map, applying the variable
+     * name templating as configured
+     * 
+     * @param source
+     *      Source map from which to copy variables
+     * @param target 
+     *      Target map on which to place variables with their templated name
+     */
     public void copyEnvVars(M source, M target);
 
 }

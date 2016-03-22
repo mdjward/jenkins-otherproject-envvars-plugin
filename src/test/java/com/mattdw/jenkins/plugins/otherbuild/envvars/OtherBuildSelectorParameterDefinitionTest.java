@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2016 M.D.Ward <matthew.ward@byng.co>.
+ * Copyright 2016 M.D.Ward <dev@mattdw.co.uk>.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  *
- * @author M.D.Ward <matthew.ward@byng.co>
+ * @author M.D.Ward <dev@mattdw.co.uk>
  */
 @RunWith(MockitoJUnitRunner.class)
 public class OtherBuildSelectorParameterDefinitionTest {
@@ -355,7 +355,7 @@ public class OtherBuildSelectorParameterDefinitionTest {
     @Test
     public void testGetDescriptorDisplayName() {
         when(this.descriptor.getDisplayName()).thenCallRealMethod();
-        assertEquals("Other build", this.descriptor.getDisplayName());
+        assertEquals(Messages.OtherBuildSelectorParameterDefinition_ParameterDefinitionDisplayName(), this.descriptor.getDisplayName());
     }
     
 }
